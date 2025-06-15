@@ -19,4 +19,5 @@ jobs:
           MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
         run: |
           modal token set --token-id $MODAL_TOKEN_ID --token-secret $MODAL_TOKEN_SECRET
+          modal secret create groq-secret GROQ_API_KEY=${{ secrets.MODAL_GROQ_KEY }}
           modal deploy modal_app.py
