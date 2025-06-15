@@ -8,6 +8,7 @@ image = modal.Image.debian_slim().pip_install([
     "fastapi[standard]"
 ])
 
+
 @app.function(
     image=image,
     secrets=[modal.Secret.from_name("groq-secret")],
@@ -19,7 +20,7 @@ def generate_and_execute(prompt: str) -> dict:
     import os
     
     # Generate code - initialize with API key from environment
-    client = Groq(api_key=os.environ.get("API_KEY"))  # or whatever your secret key name is
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))  # or whatever your secret key name is
     
     completion = client.chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
