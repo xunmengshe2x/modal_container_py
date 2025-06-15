@@ -4,7 +4,7 @@ import contextlib
 
 app = modal.App("simple-ai-code")
 image = modal.Image.debian_slim().pip_install([
-    "groq==0.11.0",
+    "groq==0.28.0",
     "fastapi[standard]"
 ])
 
@@ -16,9 +16,10 @@ image = modal.Image.debian_slim().pip_install([
 def generate_and_execute(prompt: str) -> dict:
     """Generate Python code from prompt and execute it"""
     from groq import Groq
+    import os
     
-    # Generate code
-    client = Groq()
+    # Generate code - initialize with API key from environment
+    client = Groq(api_key=os.environ.get("API_KEY"))  # or whatever your secret key name is
     
     completion = client.chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
