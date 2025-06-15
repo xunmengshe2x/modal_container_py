@@ -2,10 +2,14 @@ import modal
 import io
 import contextlib
 
+
+
 app = modal.App("simple-ai-code")
 
 image = modal.Image.debian_slim().pip_install([
     "groq==0.11.0",
+    "fastapi[standard]"
+
 ])
 
 @app.function(
