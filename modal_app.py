@@ -2,14 +2,10 @@ import modal
 import io
 import contextlib
 
-
-
 app = modal.App("simple-ai-code")
-
 image = modal.Image.debian_slim().pip_install([
     "groq==0.11.0",
     "fastapi[standard]"
-
 ])
 
 @app.function(
@@ -39,7 +35,7 @@ def generate_and_execute(prompt: str) -> dict:
         temperature=0.7,
         max_completion_tokens=1024,
         top_p=1,
-        stream=False,  # Set to False for simpler handling
+        stream=False,
         stop=None,
     )
     
@@ -78,28 +74,53 @@ def generate_and_execute(prompt: str) -> dict:
             "prompt": prompt
         }
 
+# FIXED VERSION - Choose one of these approaches:
+
+# Option 1: Simple FastAPI-style endpoint
 @app.function(
     image=image,
     keep_warm=1,
     secrets=[modal.Secret.from_name("groq-secret")],
 )
 @modal.web_endpoint(method="POST")
-def api():
-    """API endpoint"""
-    from fastapi import Request
-    from fastapi.responses import JSONResponse
+async def api(request_data: dict):
+    """API endpoint - simple version"""
+    prompt = request_data.get("prompt", "")
     
-    async def handler(request: Request):
-        data = await request.json()
-        prompt = data.get("prompt", "")
-        
-        if not prompt:
-            return JSONResponse({"error": "prompt required"}, status_code=400)
-        
-        result = await generate_and_execute.remote.aio(prompt)
-        return JSONResponse(result)
+    if not prompt:
+        return {"error": "prompt required"}
     
-    return handler
+    # Call the function and await the result
+    result = await generate_and_execute.remote.aio(prompt)
+    return result
+
+# Option 2: Full FastAPI handler (alternative approach)
+# @app.function(
+#     image=image,
+#     keep_warm=1,
+#     secrets=[modal.Secret.from_name("groq-secret")],
+# )
+# @modal.web_endpoint(method="POST")
+# async def api():
+#     """API endpoint - FastAPI handler version"""
+#     from fastapi import Request, HTTPException
+#     from fastapi.responses import JSONResponse
+    
+#     async def handler(request: Request):
+#         try:
+#             data = await request.json()
+#             prompt = data.get("prompt", "")
+            
+#             if not prompt:
+#                 raise HTTPException(status_code=400, detail="prompt required")
+            
+#             result = await generate_and_execute.remote.aio(prompt)
+#             return JSONResponse(result)
+            
+#         except Exception as e:
+#             return JSONResponse({"error": str(e)}, status_code=500)
+    
+#     return handler
 
 # Test locally
 @app.local_entrypoint()
